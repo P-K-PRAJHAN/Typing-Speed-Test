@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Typing Speed Analyzer{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">Dashboard</h1>
+            <div>
+                <a href="{{ url_for('main.analytics') }}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-chart-line me-1"></i> View Analytics
+                </a>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <i class="fas fa-keyboard me-1"></i> New Test
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('main.typing_test', difficulty='easy') }}">
+                                <span class="badge bg-success me-2">Easy</span>Beginner
+                            </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('main.typing_test', difficulty='medium') }}">
+                                <span class="badge bg-warning text-dark me-2">Medium</span>Intermediate
+                            </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('main.typing_test', difficulty='hard') }}">
+                                <span class="badge bg-danger me-2">Hard</span>Advanced
+                            </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-1">Average WPM</h6>
+                        <h2 class="mb-0">{{ "%0.1f"|format(avg_wpm|default(0)|float) }}</h2>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-tachometer-alt text-primary"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <span class="text-success"><i class="fas fa-arrow-up"></i> 5.2%</span>
+                    <span class="text-muted ms-2">vs last 30 days</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-1">Best WPM</h6>
+                        <h2 class="mb-0">{{ best_wpm|default(0) }}</h2>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-trophy text-success"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <span class="text-success"><i class="fas fa-arrow-up"></i> 8.7%</span>
+                    <span class="text-muted ms-2">personal best</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-1">Tests Taken</h6>
+                        <h2 class="mb-0">{{ total_tests|default(0) }}</h2>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-keyboard text-warning"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <span class="text-success"><i class="fas fa-arrow-up"></i> 12.3%</span>
+                    <span class="text-muted ms-2">this month</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-1">Accuracy</h6>
+                        <h2 class="mb-0">{{ "%0.1f"|format(avg_accuracy|default(0)|float) }}%</h2>
+                    </div>
+                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-bullseye text-info"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <span class="text-success"><i class="fas fa-arrow-up"></i> 2.1%</span>
+                    <span class="text-muted ms-2">improvement</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Tests -->
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Tests</h5>
+                <a href="{{ url_for('main.analytics') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_tests %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>WPM</th>
+                                <th>Accuracy</th>
+                                <th>Errors</th>
+                                <th>Difficulty</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for test in recent_tests %}
+                            <tr>
+                                <td>{{ test.created_at.strftime('%b %d, %H:%M') }}</td>
+                                <td class="fw-bold">{{ "%0.1f"|format(test.wpm|default(0)|float) }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                            <div class="progress-bar
+                                                {% set acc = test.accuracy|default(0) %}
+                                                {% if acc >= 90 %}bg-success{% elif acc >= 80 %}bg-warning{% else %}bg-danger{% endif %}"
+                                                role="progressbar"
+                                                style="width: {{ acc }}%;"
+                                                aria-valuenow="{{ "%0.1f"|format(acc|float) }}"
+                                                aria-valuemin="0"
+                                                aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <span>{{ "%0.1f"|format((test.accuracy|default(0))|float) }}%</span>
+                                    </div>
+                                </td>
+                                <td>{{ test.errors|default(0) }}</td>
+                                <td>
+                                    {% set diff = test.difficulty|default('medium') %}
+                                    <span class="badge {% if diff == 'easy' %}bg-success{% elif diff == 'medium' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                        {{ diff|capitalize }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="#" class="btn btn-sm btn-outline-secondary">Details</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center p-5">
+                    <div class="mb-3">
+                        <i class="fas fa-keyboard fa-3x text-muted"></i>
+                    </div>
+                    <h5>No tests taken yet</h5>
+                    <p class="text-muted">Complete your first typing test to see your stats here.</p>
+                    <a href="{{ url_for('main.typing_test', difficulty='medium') }}" class="btn btn-primary">
+                        <i class="fas fa-keyboard me-2"></i>Take a Test
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Start -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Quick Start</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('main.typing_test', difficulty='easy') }}"
+                        class="btn btn-outline-success text-start p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Beginner</h6>
+                                <p class="small text-muted mb-0">Simple texts to get started</p>
+                            </div>
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('main.typing_test', difficulty='medium') }}"
+                        class="btn btn-outline-warning text-start p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Intermediate</h6>
+                                <p class="small text-muted mb-0">Moderate difficulty level</p>
+                            </div>
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('main.typing_test', difficulty='hard') }}"
+                        class="btn btn-outline-danger text-start p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Advanced</h6>
+                                <p class="small text-muted mb-0">Challenging content</p>
+                            </div>
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </a>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="d-grid">
+                    <a href="#" class="btn btn-outline-primary" data-bs-toggle="modal"
+                        data-bs-target="#customTestModal">
+                        <i class="fas fa-sliders-h me-2"></i>Custom Test
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Card -->
+        <div class="card mt-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Your Progress</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="position-relative d-inline-block mb-2">
+                        <div class="progress-circle" data-value="{{ (avg_accuracy|default(0) / 100) * 360 }}">
+                            <span class="progress-circle-value">{{ "%0.0f"|format(avg_accuracy|default(0)|float) }}%</span>
+                        </div>
+                    </div>
+                    <h5>Overall Accuracy</h5>
+                    <p class="text-muted">Based on your last 10 tests</p>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Beginner</span>
+                    <div class="progress flex-grow-1 mx-3" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 75%;"
+                            aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <span class="text-muted">75%</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Intermediate</span>
+                    <div class="progress flex-grow-1 mx-3" style="height: 8px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 45%;"
+                            aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <span class="text-muted">45%</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Advanced</span>
+                    <div class="progress flex-grow-1 mx-3" style="height: 8px;">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 20%;"
+                            aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <span class="text-muted">20%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Test Modal -->
+<div class="modal fade" id="customTestModal" tabindex="-1" aria-labelledby="customTestModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="customTestModalLabel">Custom Test Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="customTestForm">
+                    <div class="mb-3">
+                        <label for="testDuration" class="form-label">Test Duration (seconds)</label>
+                        <input type="number" class="form-control" id="testDuration" min="30" max="600" value="60">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="difficultyLevel" class="form-label">Difficulty Level</label>
+                        <select class="form-select" id="difficultyLevel">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="showTimer" checked>
+                        <label class="form-check-label" for="showTimer">Show Timer</label>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="showWpm" checked>
+                        <label class="form-check-label" for="showWpm">Show WPM</label>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="showAccuracy" checked>
+                        <label class="form-check-label" for="showAccuracy">Show Accuracy</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="startCustomTest">Start Test</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .progress-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: conic-gradient(#0d6efd 0deg, #e9ecef 0deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    .progress-circle::before {
+        content: '';
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: white;
+    }
+    .progress-circle-value {
+        position: relative;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0d6efd;
+    }
+    .table> :not(caption)>*>* {
+        padding: 0.75rem 1rem;
+    }
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+    .btn-outline-primary,
+    .btn-outline-success,
+    .btn-outline-warning,
+    .btn-outline-danger {
+        transition: all 0.3s ease;
+    }
+    .btn-outline-primary:hover {
+        background-color: #0d6efd;
+        color: white;
+    }
+    .btn-outline-success:hover {
+        background-color: #198754;
+        color: white;
+    }
+    .btn-outline-warning:hover {
+        background-color: #ffc107;
+        color: #000;
+    }
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('startCustomTest').addEventListener('click', function () {
+        const duration = document.getElementById('testDuration').value;
+        const difficulty = document.getElementById('difficultyLevel').value;
+        const showTimer = document.getElementById('showTimer').checked;
+        const showWpm = document.getElementById('showWpm').checked;
+        const showAccuracy = document.getElementById('showAccuracy').checked;
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('customTestModal'));
+        if (modal) modal.hide();
+
+        window.location.href = `/test/${difficulty}?duration=${duration}&showTimer=${showTimer}&showWpm=${showWpm}&showAccuracy=${showAccuracy}`;
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

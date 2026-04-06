@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block title %}Typing Test - {{ difficulty }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .test-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .difficulty-badge {
+        font-size: 0.8rem;
+        padding: 0.35em 0.65em;
+        border-radius: 0.25rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .difficulty-easy {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .difficulty-medium {
+        background-color: #fff3cd;
+        color: #664d03;
+    }
+
+    .difficulty-hard {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+
+    .text-display {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.2rem;
+        line-height: 1.8;
+        min-height: 150px;
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        white-space: pre-wrap;
+        overflow-y: auto;
+        max-height: 200px;
+    }
+
+    .typing-area {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.2rem;
+        line-height: 1.8;
+        width: 100%;
+        min-height: 150px;
+        padding: 1rem;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        resize: none;
+        margin-bottom: 1.5rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .typing-area:focus {
+        outline: none;
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    .stats-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+        text-align: center;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        flex: 1;
+        margin: 0 0.5rem;
+    }
+
+    .stat-box:first-child {
+        margin-left: 0;
+    }
+
+    .stat-box:last-child {
+        margin-right: 0;
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #0d6efd;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .timer {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0d6efd;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .results {
+        text-align: center;
+        margin-top: 2rem;
+        display: none;
+    }
+
+    .wpm {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: #0d6efd;
+        margin-bottom: 0.5rem;
+        line-height: 1;
+    }
+
+    .accuracy {
+        font-size: 1.25rem;
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+
+    .feedback {
+        background-color: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+        padding: 1rem;
+        margin: 1.5rem 0;
+        border-radius: 0 4px 4px 0;
+    }
+
+    .character {
+        position: relative;
+        display: inline-block;
+    }
+
+    .correct {
+        color: #198754;
+    }
+
+    .incorrect {
+        color: #dc3545;
+        text-decoration: underline;
+    }
+
+    .current {
+        background-color: #fff3cd;
+        border-radius: 2px;
+        position: relative;
+    }
+
+    .current::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -2px;
+        width: 100%;
+        height: 2px;
+        background-color: #0d6efd;
+        animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0;
+        }
+    }
+
+    .progress {
+        height: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-bar {
+        transition: width 0.1s ease;
+    }
+
+    .keyboard-shortcuts {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .shortcut-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .shortcut-key {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-right: 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="test-container">
+    <div class="test-header">
+        <h1>Typing Test</h1>
+        <span class="difficulty-badge difficulty-{{ difficulty|lower }}">{{ difficulty }}</span>
+    </div>
+
+    <div class="progress">
+        <div id="test-progress" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+    </div>
+
+    <div class="timer" id="timer">05:00</div>
+
+    <div class="stats-container">
+        <div class="stat-box">
+            <div class="stat-value" id="wpm">0.0</div>
+            <div class="stat-label">WPM</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="accuracy">0.0%</div>
+            <div class="stat-label">Accuracy</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value" id="errors">0</div>
+            <div class="stat-label">Errors</div>
+        </div>
+    </div>
+
+    <div class="text-display" id="text-display">
+        {% for char in text %}
+            {% if char == ' ' %}
+                <span class="character" id="char-{{ loop.index0 }}">&nbsp;</span>
+            {% elif char == '\n' %}
+                <span class="character" id="char-{{ loop.index0 }}"><br></span>
+            {% else %}
+                <span class="character" id="char-{{ loop.index0 }}">{{ char }}</span>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <textarea class="typing-area" id="typing-area" placeholder="Start typing here..." autocomplete="off"
+        autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+
+    <div class="d-grid gap-2">
+        <button class="btn btn-primary btn-lg" id="restart-button">
+            <i class="fas fa-redo me-2"></i>Restart Test
+        </button>
+    </div>
+
+    <div class="results" id="results">
+        <h2>Test Complete!</h2>
+        <div class="wpm" id="final-wpm">0.0</div>
+        <div class="accuracy" id="final-accuracy">0.0% accuracy</div>
+
+        <div class="feedback" id="feedback">
+            <h5><i class="fas fa-lightbulb me-2"></i>Tip</h5>
+            <p id="feedback-text">Keep practicing to improve your typing speed and accuracy.</p>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <button class="btn btn-primary me-md-2" id="try-again-button">
+                <i class="fas fa-redo me-2"></i>Try Again
+            </button>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-tachometer-alt me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="keyboard-shortcuts">
+        <h6 class="mb-3">Keyboard Shortcuts</h6>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Tab</span>
+                    <span>Restart test</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Esc</span>
+                    <span>Pause test</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="shortcut-item">
+                    <span class="shortcut-key">Ctrl</span>
+                    <span>+</span>
+                    <span class="shortcut-key">Enter</span>
+                    <span>End test</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize the typing test
+        initializeTest();
+
+        // Set up event listeners
+        const typingArea = document.getElementById('typing-area');
+        const restartButton = document.getElementById('restart-button');
+        const tryAgainButton = document.getElementById('try-again-button');
+
+        if (typingArea) {
+            // Focus the typing area when the page loads
+            typingArea.focus();
+
+            // Handle keyboard shortcuts
+            typingArea.addEventListener('keydown', function (e) {
+                // Tab to restart test
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    restartTest();
+                }
+
+                // Ctrl+Enter to end test
+                if (e.ctrlKey && e.key === 'Enter') {
+                    e.preventDefault();
+                    if (isTestRunning) {
+                        finishTest();
+                    }
+                }
+
+                // Esc to pause/resume test
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    if (isTestRunning) {
+                        clearInterval(timer);
+                        isTestRunning = false;
+                        typingArea.blur();
+                    } else {
+                        startTest();
+                        typingArea.focus();
+                    }
+                }
+            });
+        }
+
+        if (restartButton) {
+            restartButton.addEventListener('click', restartTest);
+        }
+
+        if (tryAgainButton) {
+            tryAgainButton.addEventListener('click', function () {
+                // Reload the page to start a new test with the same difficulty
+                window.location.reload();
+            });
+        }
+    });
+
+    // Make these functions available globally for the timer.js script
+    window.restartTest = restartTest;
+    window.initializeTest = initializeTest;
+    window.startTest = startTest;
+    window.finishTest = finishTest;
+    window.updateStats = updateStats;
+</script>
+{% endblock %}
