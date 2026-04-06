@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Core Dependencies
 Flask==2.0.1
 Flask-SQLAlchemy==2.5.1
@@ -33,3 +34,6 @@ Werkzeug==2.0.1
 
 # For generating requirements.txt (if needed)
 # pip freeze > requirements.txt
+=======
+matplotlib>=3.5.0
+>>>>>>> 7cf3def41c6ebfafaf66122141889a30d8f721a6
