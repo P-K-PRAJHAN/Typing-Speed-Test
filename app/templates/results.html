@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Test Results - Typing Speed Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .result-card {
+        border-radius: 10px;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .result-header {
+        background-color: #0d6efd;
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .result-body {
+        padding: 2rem;
+    }
+
+    .result-metric {
+        text-align: center;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        background-color: #f8f9fa;
+    }
+
+    .result-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+    }
+
+    .result-label {
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+    }
+
+    .wpm-value {
+        color: #0d6efd;
+    }
+
+    .accuracy-value {
+        color: #198754;
+    }
+
+    .errors-value {
+        color: #dc3545;
+    }
+
+    .time-value {
+        color: #6f42c1;
+    }
+
+    .feedback-card {
+        border-left: 4px solid #0d6efd;
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 0 8px 8px 0;
+        margin: 2rem 0;
+    }
+
+    .feedback-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        color: #0d6efd;
+    }
+
+    .comparison-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .key-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .key-metric {
+        text-align: center;
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .key-metric-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+    }
+
+    .key-metric-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .improvement {
+        color: #198754;
+    }
+
+    .decline {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="result-card">
+                <div class="result-header">
+                    <h2 class="mb-0">Typing Test Results</h2>
+                    <p class="mb-0">{{ test_result.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                </div>
+
+                <div class="result-body">
+                    <div class="row text-center mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="result-metric">
+                                <div class="result-value wpm-value">{{ "%.1f"|format(test_result.wpm) }}</div>
+                                <div class="result-label">Words Per Minute</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="result-metric">
+                                <div class="result-value accuracy-value">{{ "%.1f"|format(test_result.accuracy) }}%
+                                </div>
+                                <div class="result-label">Accuracy</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="result-metric">
+                                <div class="result-value errors-value">{{ test_result.errors }}</div>
+                                <div class="result-label">Errors</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="result-metric">
+                                <div class="result-value time-value">{{ test_result.time_taken }}s</div>
+                                <div class="result-label">Time Taken</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-metrics">
+                        <div class="key-metric">
+                            <div class="key-metric-value">{{ "%.1f"|format(test_result.wpm) }} WPM</div>
+                            <div class="key-metric-label">Typing Speed</div>
+                            <div class="mt-2">
+                                {% if test_result.wpm > 60 %}
+                                <span class="badge bg-success">Advanced</span>
+                                {% elif test_result.wpm > 40 %}
+                                <span class="badge bg-primary">Intermediate</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Beginner</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="key-metric">
+                            <div class="key-metric-value">{{ "%.1f"|format(test_result.accuracy) }}%</div>
+                            <div class="key-metric-label">Accuracy</div>
+                            <div class="mt-2">
+                                {% if test_result.accuracy > 90 %}
+                                <span class="badge bg-success">Excellent</span>
+                                {% elif test_result.accuracy > 75 %}
+                                <span class="badge bg-primary">Good</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Needs Improvement</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="key-metric">
+                            <div class="key-metric-value">{{ test_result.errors }}</div>
+                            <div class="key-metric-label">Errors</div>
+                            <div class="mt-2">
+                                {% if test_result.errors == 0 %}
+                                <span class="badge bg-success">Perfect!</span>
+                                {% elif test_result.errors <= 5 %} <span class="badge bg-primary">Good</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark">Needs Work</span>
+                                    {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="key-metric">
+                            <div class="key-metric-value">{{ test_result.time_taken }}s</div>
+                            <div class="key-metric-label">Time</div>
+                            <div class="mt-2">
+                                <span class="badge bg-info text-dark">{{ test_result.difficulty|capitalize }}
+                                    Level</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if previous_result %}
+                    <div class="comparison-card">
+                        <h4 class="mb-4">Comparison with Your Last Test</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>WPM:</span>
+                                    <span>
+                                        {{ "%.1f"|format(previous_result.wpm) }}
+                                        <i class="fas fa-arrow-right mx-2"></i>
+                                        {{ "%.1f"|format(test_result.wpm) }}
+                                        {% if test_result.wpm > previous_result.wpm %}
+                                        <span class="improvement ms-2">
+                                            <i class="fas fa-arrow-up"></i>
+                                            {{ "%.1f"|format(((test_result.wpm - previous_result.wpm) /
+                                            previous_result.wpm * 100) | abs) }}%
+                                        </span>
+                                        {% elif test_result.wpm < previous_result.wpm %} <span class="decline ms-2">
+                                            <i class="fas fa-arrow-down"></i>
+                                            {{ "%.1f"|format(((previous_result.wpm - test_result.wpm) /
+                                            previous_result.wpm * 100) | abs) }}%
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted ms-2">No change</span>
+                                    {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Accuracy:</span>
+                                    <span>
+                                        {{ "%.1f"|format(previous_result.accuracy) }}%
+                                        <i class="fas fa-arrow-right mx-2"></i>
+                                        {{ "%.1f"|format(test_result.accuracy) }}%
+                                        {% if test_result.accuracy > previous_result.accuracy %}
+                                        <span class="improvement ms-2">
+                                            <i class="fas fa-arrow-up"></i>
+                                            {{ "%.1f"|format(test_result.accuracy - previous_result.accuracy) }}%
+                                        </span>
+                                        {% elif test_result.accuracy < previous_result.accuracy %} <span
+                                            class="decline ms-2">
+                                            <i class="fas fa-arrow-down"></i>
+                                            {{ "%.1f"|format(previous_result.accuracy - test_result.accuracy) }}%
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted ms-2">No change</span>
+                                    {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="feedback-card">
+                        <div class="d-flex align-items-start">
+                            <div class="feedback-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div>
+                                <h4>Tips to Improve</h4>
+                                <p class="mb-0">{{ feedback }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                        <a href="{{ url_for('main.typing_test', difficulty=test_result.difficulty) }}"
+                            class="btn btn-primary btn-lg me-md-2">
+                            <i class="fas fa-redo me-2"></i>Try Again
+                        </a>
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-tachometer-alt me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    Share your results:
+                    <a href="#" class="text-decoration-none me-2"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-decoration-none me-2"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-decoration-none"><i class="fas fa-link"></i></a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add any JavaScript functionality here
+    });
+</script>
+{% endblock %}
