@@ -1,3 +1,10 @@
+<<<<<<< HEAD
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+=======
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -7,6 +14,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+>>>>>>> 7cf3def41c6ebfafaf66122141889a30d8f721a6
 .Python
 build/
 develop-eggs/
@@ -20,6 +28,40 @@ parts/
 sdist/
 var/
 wheels/
+<<<<<<< HEAD
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+
+# Database
+instance/*.db
+instance/*.sqlite
+
+# Environment variables
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+=======
 share/python-wheels/
 *.egg-info/
 .installed.cfg
@@ -180,3 +222,4 @@ backend/charts/
 
 # Windows
 Thumbs.db
+>>>>>>> 7cf3def41c6ebfafaf66122141889a30d8f721a6
